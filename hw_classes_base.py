@@ -229,41 +229,60 @@ CHECK_CORPUS = [
 
 
 def demo():
-    print('--Сценарий 1')
+    print('--Сценарий 1: Веса TF-IDF')
+    # Инициализируем векторайзер с настройками по умолчанию
     tfidf = TfidfVectorizer.from_config({})
+
+    # Обучаем модель и сразу получаем матрицу tf-idf
     matrix1 = tfidf.fit_transform(TRAIN_CORPUS)
-    print(tfidf.get_feature_names())
+    print("Словарь:", tfidf.get_feature_names())
 
+    # Сохраняем вектор idf и выводим его вместе с матрицей
     current_idf = tfidf.idf
-    print(current_idf)
-    print(matrix1)
+    print("Веса IDF:", current_idf)
+    print("Матрица TF-IDF:", matrix1)
 
+    # Очищаем внешний список
+    # Внутренний idf модели не должен пострадать.
     current_idf.clear()
-    print(tfidf.idf)
+    print("Внутренний IDF после попытки очистки:", tfidf.idf)
 
-    print('\n--Сценарий 2')
+    print('\n--Сценарий 2: Настройки и новый fit()')
+    # Отключаем нижний регистр и расчет idf
     tf = TfidfVectorizer.from_config({'lowercase': False, 'use_idf': False})
     scenario2_corpus = ['Марс марс', 'МАРС сигнал']
 
+    # use_idf=False, ожидаем пустой idf и матрицу частот tf
     matrix2 = tf.fit_transform(scenario2_corpus)
-    print(tf.get_feature_names())
-    print(tf.idf)
-    print(matrix2)
+    print("Словарь (с учетом регистра):", tf.get_feature_names())
+    print("Список IDF (ожидаем пустой):", tf.idf)
+    print("Матрица частот TF:", matrix2)
 
+    # Модель забывает старый словарь
     tfidf.fit(['Венера облака'])
-    print(tfidf.get_feature_names())
-    print(tfidf.idf)
+    print("Новый словарь после переобучения:", tfidf.get_feature_names())
+    print("Новые веса IDF:", tfidf.idf)
+
+    # "Марс" неизвестен новому словарю, поэтому он игнорируется
+    print("Трансформация (неизвестное слово):")
     print(tfidf.transform(['Марс Венера облака']))
 
-    print('\n--Сценарий 3')
+    print('\n--Сценарий 3: Ключевые слова')
+    # Создаем экстрактор, использующий переобученную модель
     extractor = KeywordExtractor(tfidf, top_n=2)
     extractor.fit(TRAIN_CORPUS)
 
+    # Извлекаем топ 2 ключевых слова для каждого текста
+    print("Извлечение топ-2 слов:")
     print(extractor.extract(CHECK_CORPUS))
 
+    # Изменяем параметр top_n и проверяем обрезку
     extractor.top_n = 1
+    print("Извлечение топ-1 слова:")
     print(extractor.extract(CHECK_CORPUS))
 
+    # Проверка сеттера, ожидаем ValueError при top_n=0
+    print("Попытка установить некорректный top_n:")
     try:
         extractor.top_n = 0
     except ValueError as e:
