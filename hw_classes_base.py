@@ -81,6 +81,8 @@ class CountVectorizer:
             for token in self.tokenize(line):
                 self.add_word(token)
 
+        return self
+
     def transform(self, text):
         if not self._vocabulary:
             raise RuntimeError("ERROR: fit isn't initialized.")
@@ -145,6 +147,8 @@ class TfidfVectorizer(CountVectorizer):
             for word, idx in self._vocabulary.items():
                 df = sum(1 for tokens in doc_tokens if word in tokens)
                 self._idf[idx] = math.log((self._n_docs + 1) / (df + 1)) + 1
+
+        return self
 
     def transform(self, text):
         if not self._vocabulary:
