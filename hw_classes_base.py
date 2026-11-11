@@ -104,26 +104,6 @@ class CountVectorizer:
         return self.transform(text)
 
 
-# Реализация класса взята с практики
-class BinaryVectorizer(CountVectorizer):
-    def transform(self, text):
-        if not len(self._vocabulary):
-            raise RuntimeError("ERROR: fit isn't initialized.")
-
-        binary_matrix = []
-        for line in text:
-            set_tokens = set(self.tokenize(line))
-            line_counts = [0] * len(self._vocabulary)
-
-            for token in set_tokens:
-                if token in self._vocabulary:
-                    line_counts[self._vocabulary[token]] = 1
-
-            binary_matrix.append(line_counts)
-
-        return binary_matrix
-
-
 class TfidfVectorizer(CountVectorizer):
     def __init__(self, lowercase=True, ngram_size=1, use_idf=True):
         super().__init__(lowercase=lowercase, ngram_size=ngram_size)
